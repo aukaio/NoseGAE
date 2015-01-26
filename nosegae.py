@@ -68,6 +68,7 @@ class NoseGAE(Plugin):
         configuration = application_configuration.ApplicationConfiguration([self._app_path])
 
         os.environ['APPLICATION_ID'] = configuration.app_id
+        os.environ['APPENGINE_RUNTIME'] = configuration.modules[0].runtime
 
         self.is_doctests = options.enable_plugin_doctest
 
