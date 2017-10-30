@@ -35,9 +35,6 @@ class NoseGAE(Plugin):
 
     def configure(self, options, config):
         super(NoseGAE, self).configure(options, config)
-        if not self.enabled:
-            return
-
         if sys.version_info[0:2] < (2, 7):
             raise EnvironmentError(
                 "Python version must be 2.7 or greater, like the Google App Engine environment.  "
@@ -49,6 +46,11 @@ class NoseGAE(Plugin):
         self._app_path = options.gae_app or config.workingDir
         self._data_path = options.gae_data or os.path.join(tempfile.gettempdir(),
                                                            'nosegae.sqlite3')
+        self.is_doctests = options.enable_plugin_doctest
+
+    def begin(self):
+        if not self.enabled:
+            return
 
         if 'google' in sys.modules:
             # make sure an egg (e.g. protobuf) is not cached
@@ -70,7 +72,6 @@ class NoseGAE(Plugin):
         os.environ['APPLICATION_ID'] = configuration.app_id
         os.environ['APPENGINE_RUNTIME'] = configuration.modules[0].runtime
 
-        self.is_doctests = options.enable_plugin_doctest
 
     def startTest(self, test):
         """Initializes Testbed stubs based off of attributes of the executing test
@@ -150,29 +151,4 @@ class NoseGAE(Plugin):
 
     def _add_missing_stubs(self, testbed):
         """Monkeypatch the testbed for stubs that do not have an init method yet"""
-        if not hasattr(testbed, 'PROSPECTIVE_SEARCH_SERVICE_NAME'):
-            from google.appengine.api.prospective_search.prospective_search_stub import ProspectiveSearchStub
-            testbed.PROSPECTIVE_SEARCH_SERVICE_NAME = 'matcher'
-            testbed.INIT_STUB_METHOD_NAMES.update({
-                testbed.PROSPECTIVE_SEARCH_SERVICE_NAME: 'init_prospective_search_stub'
-            })
-
-            def init_prospective_search_stub(self, enable=True, data_file=None):
-                """Workaround to avoid prospective search complain until there is a proper testbed stub
-
-                http://stackoverflow.com/questions/16026703/testbed-stub-for-google-app-engine-prospective-search
-
-                Args:
-                    :param self: The Testbed instance.
-                    :param enable: True if the fake service should be enabled, False if real
-                        service should be disabled.
-                """
-
-                if not enable:
-                    self._disable_stub(testbed.PROSPECTIVE_SEARCH_SERVICE_NAME)
-                    return
-                stub = ProspectiveSearchStub(
-                    prospective_search_path=data_file,
-                    taskqueue_stub=self.get_stub(testbed.TASKQUEUE_SERVICE_NAME))
-                self._register_stub(testbed.PROSPECTIVE_SEARCH_SERVICE_NAME, stub)
-            testbed.Testbed.init_prospective_search_stub = init_prospective_search_stub
+        pass
