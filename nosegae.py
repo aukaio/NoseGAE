@@ -52,15 +52,6 @@ class NoseGAE(Plugin):
         if not self.enabled:
             return
 
-        if 'google' in sys.modules:
-            # make sure an egg (e.g. protobuf) is not cached
-            # with the wrong path:
-            del sys.modules['google']
-        try:
-            import appengine_config
-        except ImportError:
-            pass
-
         import dev_appserver
         dev_appserver.fix_sys_path()  # add paths to libs specified in app.yaml, etc
 
@@ -72,6 +63,14 @@ class NoseGAE(Plugin):
         os.environ['APPLICATION_ID'] = configuration.app_id
         os.environ['APPENGINE_RUNTIME'] = configuration.modules[0].runtime
 
+        if 'google' in sys.modules:
+            # make sure an egg (e.g. protobuf) is not cached
+            # with the wrong path:
+            del sys.modules['google']
+        try:
+            import appengine_config
+        except ImportError:
+            pass
 
     def startTest(self, test):
         """Initializes Testbed stubs based off of attributes of the executing test
