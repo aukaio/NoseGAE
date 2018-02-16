@@ -75,15 +75,6 @@ class NoseGAE(Plugin):
             if path_ not in sys.path:
                 sys.path.insert(0, path_)
 
-        if 'google' in sys.modules:
-            # make sure an egg (e.g. protobuf) is not cached
-            # with the wrong path:
-            reload(sys.modules['google'])
-        try:
-            import appengine_config
-        except ImportError:
-            pass
-
         # TODO: this may need to happen after parsing your yaml files in
         # The case of modules but I need to investigate further
         import dev_appserver
