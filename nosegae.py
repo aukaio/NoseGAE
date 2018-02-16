@@ -51,9 +51,6 @@ class NoseGAE(Plugin):
 
     def configure(self, options, config):
         super(NoseGAE, self).configure(options, config)
-        if not self.enabled:
-            return
-
         if sys.version_info[0:2] < (2, 7):
             raise EnvironmentError(
                 "Python version must be 2.7 or greater, like the Google App Engine environment.  "
@@ -65,6 +62,7 @@ class NoseGAE(Plugin):
             self._app_path = [config.workingDir]
         self._data_path = options.gae_data or os.path.join(tempfile.gettempdir(),
                                                            'nosegae.sqlite3')
+        self.is_doctests = options.enable_plugin_doctest
 
         if options.gae_lib_root not in sys.path:
             options.gae_lib_root = os.path.realpath(options.gae_lib_root)
@@ -105,7 +103,14 @@ class NoseGAE(Plugin):
         # simulate same environment as devappserver2
         os.environ['CURRENT_VERSION_ID'] = self.configuration.modules[0].version_id
 
-        self.is_doctests = options.enable_plugin_doctest
+        if 'google' in sys.modules:
+            # make sure an egg (e.g. protobuf) is not cached
+            # with the wrong path:
+            del sys.modules['google']
+        try:
+            import appengine_config
+        except ImportError:
+            pass
 
         # As of SDK 0.2.5 the dev_appserver.py aggressively adds some logging handlers.
         # This removes the handlers but note that Nose will still capture logging and
