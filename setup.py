@@ -10,7 +10,7 @@ Basic usage:
     $ nosetests --with-gae
 
 """
-VERSION = '0.4.0'
+VERSION = '0.4.0.dev2'
 
 setup(
     name='NoseGAE',
