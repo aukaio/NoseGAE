@@ -66,7 +66,7 @@ class NoseGAE(Plugin):
         if 'google' in sys.modules:
             # make sure an egg (e.g. protobuf) is not cached
             # with the wrong path:
-            del sys.modules['google']
+            reload(sys.modules['google'])
         try:
             import appengine_config
         except ImportError:
